@@ -54,5 +54,6 @@ func main() {
 	app.Use(recover.New())
 	app.Use(requestid.New())
 	app.Get("/:code", handler.Get)
+	app.Post("/", handler.Post)
 
 }
