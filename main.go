@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/abassGarane/url_shortener/api"
 	"github.com/abassGarane/url_shortener/repository/mongo"
@@ -56,4 +58,15 @@ func main() {
 	app.Get("/:code", handler.Get)
 	app.Post("/", handler.Post)
 
+	errs := make(chan error, 2)
+	go func() {
+		fmt.Printf("Listening on port %s", httpPort())
+		errs <- app.Listen(httpPort())
+	}()
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
+	fmt.Printf("Terminated %s\n", <-errs)
 }
